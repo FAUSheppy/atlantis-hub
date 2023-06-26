@@ -8,6 +8,8 @@ import sys
 import json
 import datetime
 import yaml
+import urllib
+from bs4 import BeautifulSoup
 
 import sqlalchemy
 from sqlalchemy import Column, Integer, String, Boolean, or_, and_, asc, desc
@@ -48,15 +50,43 @@ def filter_tiles_by_groups(tiles, groups):
     '''Remove all tiles that are not covered by the users groups'''
     return filter(lambda tile: not tile.get("groups") or tile.get("groups") in groups, tiles)
 
+def cache_og_meta_icons(tiles):
+
+    cache_path  = "./static/cache/"
+    static_path = "./static/icons/"
+   
+    # TODO send only head request
+    # TODO identify ourself as an og preview fetcher
+    for tile_id in tiles.keys():
+        if not os.path.isfile(os.path.join(static_path, tile_id + ".png")):
+            try:
+                content = urllib.request.urlopen(tiles[tile_id]["href"])
+                soup = BeautifulSoup(content, "lxml")
+                url = soup.find("meta", property="og:image")
+                if url and url.get("content"):
+                    print("Found image for {} at {}".format(tile_id, url))
+                    with open("./static/cache/{}.png".format(tile_id), "wb") as f:
+                        f.write(urllib.request.urlopen(url.get("content")).read())
+                    tiles[tile_id].update({ "icon" : "/static/cache/{}.png".format(tile_id)})
+                else:
+                    print("Not tag found for {}".format(tile_id))
+            except urllib.error.HTTPError as e:
+                print("Error fetching {}. Skipping...".format(tile_id))
+                continue
+        else:
+            tiles[tile_id].update({ "icon" : "/static/icons/{}.png".format(tile_id)})
+
 @app.route("/")
 def list():
     user = flask.request.headers.get("X-Forwarded-Preferred-Username")
     groups = parse_xauth_groups(flask.request.headers.get("X-Auth-Request-Groups"))
 
     tiles = parse_tiles_file()
-    tiles_filtered = filter_tiles_by_groups(tiles, groups)
+    cache_og_meta_icons(tiles)
+    print(json.dumps(tiles, indent=2))
+    #tiles_filtered = filter_tiles_by_groups(tiles, groups)
 
-    return flask.render_template("dashboard.html", tiles) # TODO use filtered tiles after testing
+    return flask.render_template("dashboard.html", tiles=tiles) # TODO use filtered tiles after testing
 
 def create_app():
     db.create_all()
@@ -75,4 +105,5 @@ if __name__ == "__main__":
     with app.app_context():
         create_app()
 
-    app.run(host=args.interface, port=args.port)
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
+    app.run(host=args.interface, port=args.port, debug=True)

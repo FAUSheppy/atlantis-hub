@@ -1,0 +1,29 @@
+body{
+    background: #47918a;
+    background: radial-gradient(ellipse at center, #47918a 0%, #0b3161 100%);
+}
+
+.tile{
+    color: aliceblue;
+    font-weight: bold;
+    font-size: 18px;
+    border-radius: 5px;
+    background: linear-gradient(90deg, rgba(0,36,4,1) 0%, rgba(43,84,35,0.7763480392156863) 42%);
+    max-height: 250px;
+    min-width: 100px;
+    width: 400px;
+    float: left;
+    display: inline-block;
+    margin: 20px;
+    box-shadow: 0px 0px 4px 3px rgba(0,0,0,0.5);
+}
+
+.tile-name{
+    margin-left: 15px;
+}
+
+.tile-image{
+    margin-left:    12px;
+    margin-top:     12px;
+    margin-bottom:  12px;
+}

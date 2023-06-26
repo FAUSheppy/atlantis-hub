@@ -1,0 +1,15 @@
+<head>
+    {% include "head.html" %}
+</head>
+<body>
+    {% for k,v in tiles.items() %}
+    <a href="{{ v['href'] }}">
+        <div class="tile">
+                <img height=65 src="{{ v['icon'] }}"
+                           style="max-width: 65px" class="tile-image">
+            </img>
+            <b class="tile-name">{{ v["name"] }}</b>
+        </div>
+    </a>
+    {% endfor %}
+</body>

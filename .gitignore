@@ -2,3 +2,5 @@
 *.sqlite
 instance/
 *.yaml
+static/cache/
+*.db
