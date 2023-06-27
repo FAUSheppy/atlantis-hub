@@ -3,6 +3,20 @@ body{
     background: radial-gradient(ellipse at center, #47918a 0%, #0b3161 100%);
 }
 
+.seperator{
+    display: inline-block;
+    float: left;
+    width: 100%;
+}
+
+.sperator.hr{
+    display: inline-block;
+    float: left;
+    width: 100%;
+    height: 4px;
+    border-width: 4px
+}
+
 .tile{
     color: aliceblue;
     font-weight: bold;

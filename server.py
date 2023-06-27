@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import os
+import requests
 import flask
 import werkzeug
 import argparse
@@ -52,29 +53,46 @@ def filter_tiles_by_groups(tiles, groups):
 
 def cache_og_meta_icons(tiles):
 
+    # TODO caching not working
+    # TODO make sure errors are not constantly reloaded
     cache_path  = "./static/cache/"
     static_path = "./static/icons/"
    
     # TODO send only head request
     # TODO identify ourself as an og preview fetcher
     for tile_id in tiles.keys():
-        if not os.path.isfile(os.path.join(static_path, tile_id + ".png")):
+        if os.path.isfile("./static/static/{}.png".format(tile_id)):
+            tiles[tile_id].update({ "icon" : "/static/static/{}.png".format(tile_id)})
+            print("Found static icon for {}".format(tile_id))
+        elif os.path.isfile("./static/cache/{}.png".format(tile_id)):
+            print("Found cached icon for {}".format(tile_id))
+            tiles[tile_id].update({ "icon" : "./static/icons/{}.png".format(tile_id)})
+        else:
             try:
                 content = urllib.request.urlopen(tiles[tile_id]["href"])
+                content = requests.get(tiles[tile_id]["href"], allow_redirects=True).content
                 soup = BeautifulSoup(content, "lxml")
                 url = soup.find("meta", property="og:image")
                 if url and url.get("content"):
                     print("Found image for {} at {}".format(tile_id, url))
                     with open("./static/cache/{}.png".format(tile_id), "wb") as f:
-                        f.write(urllib.request.urlopen(url.get("content")).read())
-                    tiles[tile_id].update({ "icon" : "/static/cache/{}.png".format(tile_id)})
+                        image = urllib.request.urlopen(url.get("content")).read()
+                        image = requests.get(url.get("content"))
+                        f.write(image)
+                    tiles[tile_id].update({ "icon" : "./static/cache/{}.png".format(tile_id)})
                 else:
                     print("Not tag found for {}".format(tile_id))
             except urllib.error.HTTPError as e:
                 print("Error fetching {}. Skipping...".format(tile_id))
                 continue
-        else:
-            tiles[tile_id].update({ "icon" : "/static/icons/{}.png".format(tile_id)})
+
+@app.route("/user-update")
+def user_update():
+
+    # show unavailable
+    # show external
+    # hidelist
+    pass
 
 @app.route("/")
 def list():

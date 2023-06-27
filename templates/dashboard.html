@@ -11,5 +11,11 @@
             <b class="tile-name">{{ v["name"] }}</b>
         </div>
     </a>
+    {% if loop.index == 8 %}
+    <div class="seperator">
+    <h3>Extern</h3>
+    <hr>
+    </div>
+    {% endif %}
     {% endfor %}
 </body>
