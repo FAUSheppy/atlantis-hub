@@ -5,3 +5,4 @@ instance/
 *.yaml
 static/cache/
 *.db
+static/icons/
