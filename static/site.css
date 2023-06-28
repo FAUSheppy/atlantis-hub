@@ -7,6 +7,7 @@ body{
     display: inline-block;
     float: left;
     width: 100%;
+    margin-top: 30px;
 }
 
 .sperator.hr{
