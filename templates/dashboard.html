@@ -2,26 +2,28 @@
     {% include "head.html" %}
 </head>
 <body>
-    {% for k,v in tiles.items() %}
-    <a href="{{ v['href'] }}">
-        <div class="tile"
-             {% if v.get('background') %}
-             style="background: {{ v['background'] }};"
-             {% else %}
-             style="background: linear-gradient(90deg, {{ v['gradient-left'] }} 20%, {{ v['gradient-right'] }} 65%);"
-             {% endif %}
-             >
-                <img height=65 src="{{ v['icon'] }}"
-                           style="max-width: 65px" class="tile-image">
-            </img>
-            <b class="tile-name">{{ v["name"] }}</b>
+    <div class="main-container">
+        {% for k,v in tiles.items() %}
+        <a href="{{ v['href'] }}">
+            <div class="tile"
+                 {% if v.get('background') %}
+                 style="background: {{ v['background'] }};"
+                 {% else %}
+                 style="background: linear-gradient(90deg, {{ v['gradient-left'] }} 20%, {{ v['gradient-right'] }} 65%);"
+                 {% endif %}
+                 >
+                    <img height=65 src="{{ v['icon'] }}"
+                               style="max-width: 65px" class="tile-image">
+                </img>
+                <b class="tile-name">{{ v["name"] }}</b>
+            </div>
+        </a>
+        {% if loop.index == 8 %}
+        <div class="seperator">
+        <h3>Extern</h3>
+        <hr>
         </div>
-    </a>
-    {% if loop.index == 8 %}
-    <div class="seperator">
-    <h3>Extern</h3>
-    <hr>
+        {% endif %}
+        {% endfor %}
     </div>
-    {% endif %}
-    {% endfor %}
 </body>
