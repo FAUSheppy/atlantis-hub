@@ -6,3 +6,4 @@ instance/
 static/cache/
 *.db
 static/icons/
+atlantis-hub-content/
