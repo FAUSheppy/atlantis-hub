@@ -11,13 +11,14 @@
             {% for k,v in tiles.items() %}
             <a href="{{ v['href'] }}">
                 <div class="tile"
-                     {% if v.get('background') %}
-                     style="background: {{ v['background'] }};"
-                     {% else %}
-                     style="background: linear-gradient(90deg, {{ v['gradient-left'] }} 20%, {{ v['gradient-right'] }} 65%);"
-                     {% endif %}
-                     >
-                        <img height=65 src="{{ v['icon'] }}"
+                    {% if v.get('background') %}
+                    style="background: {{ v['background'] }};"
+                    {% else %}
+                    style="background: linear-gradient(90deg, {{ v['gradient-left'] }} 20%, {{ v['gradient-right'] }} 65%);"
+                    {% endif %}
+                    >
+
+                    <img height=65 src="{{ v['icon'] }}"
                              style="max-width: 465px" class="tile-image">
                     </img>
                     <b class="tile-name">{{ v["name"] }}</b>
