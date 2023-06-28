@@ -238,12 +238,26 @@ def list():
     user = flask.request.headers.get("X-Forwarded-Preferred-Username")
     groups = parse_xauth_groups(flask.request.headers.get("X-Auth-Request-Groups"))
 
+    # load tiles #
     tiles = parse_tiles_file()
     cache_og_meta_icons(tiles)
     cache_tile_gradients(tiles)
+
+    # build categories #
+    categories = dict()
+    for k,v in tiles.items():
+        tags = v["tags"]
+        main_tag = tags[0]
+        if main_tag in categories:
+            categories[main_tag].update({k : v})
+        else:
+            categories.update({ main_tag : {k : v}})
+
+
     #tiles_filtered = filter_tiles_by_groups(tiles, groups)
 
-    return flask.render_template("dashboard.html", tiles=tiles) # TODO use filtered tiles after testing
+    # TODO use filtered tiles after testing
+    return flask.render_template("dashboard.html", tiles=tiles, categories=categories)
 
 def create_app():
     db.create_all()
