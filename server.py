@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import re
 import os
 import requests
 import flask
@@ -24,6 +25,36 @@ app = flask.Flask("Atlantis Hub")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLITE_LOCATION") or "sqlite:///sqlite.db"
 db = SQLAlchemy(app)
+
+class CacheInfo(db.Model):
+
+    __tablename__ = "cache_info"
+
+    href        = Column(String, primary_key=True)
+    last_try    = Column(String)
+    filepath    = Column(String) # None if failed
+    source_type = Column(String) # og, rel-icon
+
+def record_cache_result(href, path, source_type=None):
+
+    now = datetime.datetime.now().isoformat()
+    ci = CacheInfo(href=href, filepath=path, last_try=now, source_type=source_type)
+    db.session.merge(ci)
+    db.session.commit()
+
+def check_cache_for(href):
+    '''Return the age of the cache in days or None'''
+
+    result = db.session.query(CacheInfo).filter(CacheInfo.href==href).first()
+
+    if not result:
+        return -1
+
+    last_try = datetime.datetime.fromisoformat(result.last_try)
+    delta = datetime.datetime.now() - last_try
+
+    return delta.days
+
 
 class Tile(db.Model):
 
@@ -53,37 +84,93 @@ def filter_tiles_by_groups(tiles, groups):
 
 def cache_og_meta_icons(tiles):
 
-    # TODO caching not working
-    # TODO make sure errors are not constantly reloaded
-    cache_path  = "./static/cache/"
-    static_path = "./static/icons/"
+    CACHE_DIR  = "./static/cache/"
+    STATIC_DIR = "./static/icons/"
    
     # TODO send only head request
-    # TODO identify ourself as an og preview fetcher
     for tile_id in tiles.keys():
-        if os.path.isfile("./static/static/{}.png".format(tile_id)):
-            tiles[tile_id].update({ "icon" : "/static/static/{}.png".format(tile_id)})
-            print("Found static icon for {}".format(tile_id))
-        elif os.path.isfile("./static/cache/{}.png".format(tile_id)):
-            print("Found cached icon for {}".format(tile_id))
-            tiles[tile_id].update({ "icon" : "./static/icons/{}.png".format(tile_id)})
+       
+        href        = tiles[tile_id]["href"]
+        icon_name   = "{}.png".format(tile_id)
+        static_path = os.path.join(STATIC_DIR, icon_name)
+        cache_path  = os.path.join(CACHE_DIR, icon_name)
+
+        cache_age = check_cache_for(href)
+
+        if os.path.isfile(static_path):
+            tiles[tile_id].update({ "icon" : static_path})
+        elif os.path.isfile(cache_path):
+            tiles[tile_id].update({ "icon" : cache_path})
+        elif cache_age > 0 and cache_age < 30:
+            continue
         else:
             try:
-                content = urllib.request.urlopen(tiles[tile_id]["href"])
-                content = requests.get(tiles[tile_id]["href"], allow_redirects=True).content
-                soup = BeautifulSoup(content, "lxml")
-                url = soup.find("meta", property="og:image")
-                if url and url.get("content"):
-                    print("Found image for {} at {}".format(tile_id, url))
-                    with open("./static/cache/{}.png".format(tile_id), "wb") as f:
-                        image = urllib.request.urlopen(url.get("content")).read()
-                        image = requests.get(url.get("content"))
-                        f.write(image)
-                    tiles[tile_id].update({ "icon" : "./static/cache/{}.png".format(tile_id)})
+
+                # request page #
+                urllib_request = urllib.request.Request(href)
+                print("Req")
+                # some websites (e.g. Medium) don't like an empty user agent #
+                # let's be honest about what we are doing #
+                urllib_request.add_header('User-Agent', 'AtlantisHub:og-tag-query')
+                og_response = urllib.request.urlopen(urllib_request)
+                # og_response = requests.get(href, allow_redirects=True)
+                soup = BeautifulSoup(og_response, "lxml")
+
+                # look for og:image tag #
+                og_image_tag = soup.find("meta", property="og:image")
+
+                # look for link rel icon tag #
+                # TODO maybe not just take first #
+                links = soup.find_all('link', attrs={'rel': re.compile("^(shortcut icon|icon)$", re.I)})
+                if len(links) > 0:
+                    rel_icon_field = links[0]
                 else:
-                    print("Not tag found for {}".format(tile_id))
+                    rel_icon_field = None
+
+                source_type = None
+
+                print(og_image_tag, rel_icon_field)
+
+                # if image tag exists request the image-url #
+                if og_image_tag and og_image_tag.get("content"):
+
+                    try:
+                        with open(cache_path, "wb") as f:
+                            # image = urllib.request.urlopen(url.get("content")).read()
+                            image = requests.get(url.get("content")).content
+                            f.write(image)
+                        
+                        source_type = "og"
+                    except urllib.error.HTTPError:
+                        print("Found og:image tag, but requesting image failed: {}".format(e))
+
+                elif rel_icon_field and rel_icon_field.get("href"):
+
+                    icon_base_href = rel_icon_field["href"]
+                    is_absolute = bool(urllib.parse.urlparse(icon_base_href).netloc)
+                    if not is_absolute:
+                        icon_base_href_parsed = urllib.parse.urlparse(href) # get scheme + netloc from href
+                        icon_fq_href = "{scheme}://{netloc}/{path}".format(scheme=icon_base_href_parsed.scheme,
+                            netloc=icon_base_href_parsed.netloc, path=icon_base_href)
+                    else:
+                        icon_fq_href = icon_base_href
+
+                    with open(cache_path, "wb") as f:
+                        print("Querying {}".format(icon_fq_href))
+                        image_response = requests.get(icon_fq_href)
+                        f.write(image_response.content)
+                    
+                    source_type = "rel-icon"
+                
+                # record cache path in dict and db#
+                if source_type:
+                    tiles[tile_id].update({ "icon" : cache_path})
+                    record_cache_result(href, cache_path, source_type)
+                else:
+                    raise urllib.error.HTTPError()
+
             except urllib.error.HTTPError as e:
-                print("Error fetching {}. Skipping...".format(tile_id))
+                record_cache_result(href, None, None)
                 continue
 
 @app.route("/user-update")
@@ -101,7 +188,6 @@ def list():
 
     tiles = parse_tiles_file()
     cache_og_meta_icons(tiles)
-    print(json.dumps(tiles, indent=2))
     #tiles_filtered = filter_tiles_by_groups(tiles, groups)
 
     return flask.render_template("dashboard.html", tiles=tiles) # TODO use filtered tiles after testing
