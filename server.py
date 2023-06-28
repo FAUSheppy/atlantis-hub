@@ -235,8 +235,9 @@ def user_update():
 
 @app.route("/")
 def list():
+
     user = flask.request.headers.get("X-Forwarded-Preferred-Username")
-    groups = parse_xauth_groups(flask.request.headers.get("X-Auth-Request-Groups"))
+    groups = parse_xauth_groups(flask.request.headers.get("X-Forwarded-Groups"))
 
     # load tiles #
     tiles = parse_tiles_file()
@@ -257,7 +258,8 @@ def list():
     #tiles_filtered = filter_tiles_by_groups(tiles, groups)
 
     # TODO use filtered tiles after testing
-    return flask.render_template("dashboard.html", tiles=tiles, categories=categories)
+    return flask.render_template("dashboard.html", tiles=tiles, categories=categories,
+                user=user, groups=groups)
 
 def create_app():
     db.create_all()

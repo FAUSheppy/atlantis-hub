@@ -2,6 +2,11 @@
     {% include "head.html" %}
 </head>
 <body>
+    <div class="navbar">
+        <a href="/oauth2/sign_out" class="navbar-el">Logout</a>
+    </div>
+    <div class="wellcome">Wellcome {{ user }}</div>
+    <div style="width: 30%" class="wellcome">Your rights are: {{ "+".join(groups) }}</div>
     <div class="main-container">
         {% for category, tiles in categories.items() %}
             <div class="seperator">
@@ -9,6 +14,7 @@
             <hr>
             </div>
             {% for k,v in tiles.items() %}
+            {% if not v.get("groups") or group in v["groups"] %}
             <a href="{{ v['href'] }}">
                 <div class="tile"
                     {% if v.get('background') %}
@@ -24,6 +30,7 @@
                     <b class="tile-name">{{ v["name"] }}</b>
                 </div>
             </a>
+            {% endif %}
             {% endfor %}
         {% endfor %}
     </div>
