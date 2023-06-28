@@ -40,6 +40,15 @@ class CacheInfo(db.Model):
     filepath    = Column(String) # None if failed
     source_type = Column(String) # og, rel-icon
 
+class ColorCache(db.Model):
+
+    __tablename__ = "color_cache"
+
+    tile_id     = Column(String, primary_key=True)
+    left_color  = Column(String)
+    right_color = Column(String)
+    fixed_bg    = Column(Boolean)
+
 def record_cache_result(href, path, source_type=None):
 
     now = datetime.datetime.now().isoformat()
@@ -196,8 +205,23 @@ def cache_og_meta_icons(tiles):
 def cache_tile_gradients(tiles):
 
     for tile_id, values in tiles.items():
-        icon_path = values["icon"]
-        left_color, right_color = imagetools.get_gradient_colors(icon_path)
+
+        result = db.session.query(ColorCache).filter(ColorCache.tile_id == tile_id).first()
+        print(result)
+        if result:
+            if result.fixed_bg or values.get("background"):
+                continue
+            else:
+                left_color = result.left_color
+                right_color = result.right_color
+        else:
+            icon_path = values["icon"]
+            left_color, right_color = imagetools.get_gradient_colors(icon_path)
+            color_cache = ColorCache(tile_id=tile_id, right_color=right_color,
+                                        left_color=left_color)
+            db.session.merge(color_cache)
+            db.session.commit()
+
         values.update({ "gradient-left" : left_color })
         values.update({ "gradient-right" : right_color })
 
