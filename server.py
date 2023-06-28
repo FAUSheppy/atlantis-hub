@@ -17,8 +17,13 @@ import sqlalchemy
 from sqlalchemy import Column, Integer, String, Boolean, or_, and_, asc, desc
 from flask_sqlalchemy import SQLAlchemy
 
+import imagetools
+
 XAUTH_GROUPS_SEP = ","
 TILES_CONFIG_FILE_PATH = "config.yaml"
+
+USER_AGENT_HEADER  = 'User-Agent'
+USER_AGENT_CONTENT = 'AtlantisHub:og-tag-query'
 
 app = flask.Flask("Atlantis Hub")
 
@@ -90,7 +95,13 @@ def cache_og_meta_icons(tiles):
     # TODO send only head request
     for tile_id in tiles.keys():
        
-        href        = tiles[tile_id]["href"]
+        href = tiles[tile_id]["href"]
+
+        # use another url of a site for icon i.e. to query the github icon #
+        # instead of a persons private profile picture (optional) #
+        if tiles[tile_id].get("icon-alt-url"):
+            href = tiles[tile_id].get("icon-alt-url")
+
         icon_name   = "{}.png".format(tile_id)
         static_path = os.path.join(STATIC_DIR, icon_name)
         cache_path  = os.path.join(CACHE_DIR, icon_name)
@@ -108,10 +119,9 @@ def cache_og_meta_icons(tiles):
 
                 # request page #
                 urllib_request = urllib.request.Request(href)
-                print("Req")
                 # some websites (e.g. Medium) don't like an empty user agent #
                 # let's be honest about what we are doing #
-                urllib_request.add_header('User-Agent', 'AtlantisHub:og-tag-query')
+                urllib_request.add_header(USER_AGENT_HEADER, USER_AGENT_CONTENT)
                 og_response = urllib.request.urlopen(urllib_request)
                 # og_response = requests.get(href, allow_redirects=True)
                 soup = BeautifulSoup(og_response, "lxml")
@@ -135,29 +145,38 @@ def cache_og_meta_icons(tiles):
                 if og_image_tag and og_image_tag.get("content"):
 
                     try:
+
+                        og_imge_href = og_image_tag.get("content") 
+                        urllib_image_request = urllib.request.Request(og_image_tag.get("content"))
+                        urllib_image_request.add_header(USER_AGENT_HEADER, USER_AGENT_CONTENT)
+                        image = urllib.request.urlopen(urllib_image_request).read()
+
                         with open(cache_path, "wb") as f:
-                            # image = urllib.request.urlopen(url.get("content")).read()
-                            image = requests.get(url.get("content")).content
                             f.write(image)
                         
                         source_type = "og"
-                    except urllib.error.HTTPError:
-                        print("Found og:image tag, but requesting image failed: {}".format(e))
+                    except urllib.error.HTTPError as e:
+                        print("og:image tag present but download failed: {} ({})".format(e, href))
 
                 elif rel_icon_field and rel_icon_field.get("href"):
 
                     icon_base_href = rel_icon_field["href"]
                     is_absolute = bool(urllib.parse.urlparse(icon_base_href).netloc)
                     if not is_absolute:
-                        icon_base_href_parsed = urllib.parse.urlparse(href) # get scheme + netloc from href
-                        icon_fq_href = "{scheme}://{netloc}/{path}".format(scheme=icon_base_href_parsed.scheme,
-                            netloc=icon_base_href_parsed.netloc, path=icon_base_href)
+                        # get scheme + netloc from href
+                        icon_base_href_parsed = urllib.parse.urlparse(href)
+                        icon_fq_href = "{scheme}://{netloc}/{path}".format(
+                                            scheme=icon_base_href_parsed.scheme,
+                                            netloc=icon_base_href_parsed.netloc,
+                                            path=icon_base_href.lstrip("/"))
+                        print(icon_base_href, icon_fq_href)
                     else:
                         icon_fq_href = icon_base_href
 
+                    # download icon #
+                    image_response = requests.get(icon_fq_href)
+
                     with open(cache_path, "wb") as f:
-                        print("Querying {}".format(icon_fq_href))
-                        image_response = requests.get(icon_fq_href)
                         f.write(image_response.content)
                     
                     source_type = "rel-icon"
@@ -167,11 +186,20 @@ def cache_og_meta_icons(tiles):
                     tiles[tile_id].update({ "icon" : cache_path})
                     record_cache_result(href, cache_path, source_type)
                 else:
-                    raise urllib.error.HTTPError()
+                    # nothing found #
+                    record_cache_result(href, None, None)
 
             except urllib.error.HTTPError as e:
                 record_cache_result(href, None, None)
                 continue
+
+def cache_tile_gradients(tiles):
+
+    for tile_id, values in tiles.items():
+        icon_path = values["icon"]
+        left_color, right_color = imagetools.get_gradient_colors(icon_path)
+        values.update({ "gradient-left" : left_color })
+        values.update({ "gradient-right" : right_color })
 
 @app.route("/user-update")
 def user_update():
@@ -188,6 +216,7 @@ def list():
 
     tiles = parse_tiles_file()
     cache_og_meta_icons(tiles)
+    cache_tile_gradients(tiles)
     #tiles_filtered = filter_tiles_by_groups(tiles, groups)
 
     return flask.render_template("dashboard.html", tiles=tiles) # TODO use filtered tiles after testing
