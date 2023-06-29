@@ -1,4 +1,4 @@
-name: Container Build for tmnf-replay-server
+name: Container Build for atlantis-hub
 
 on:
   push:
@@ -29,4 +29,4 @@ jobs:
           context: .
           platforms: linux/amd64
           push: true
-          tags: "${{ secrets.REGISTRY }}/tmnf-replay-server:latest"
+          tags: "${{ secrets.REGISTRY }}/atlantis-hub:latest"
