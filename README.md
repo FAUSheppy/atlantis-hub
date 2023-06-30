@@ -84,3 +84,4 @@ In testing you can spin up a nginx container setting those headers without authe
     # you might have to restart after the docker network is create if there was none before
     ./server.py -i 0.0.0.0
 
+You can also find debug information hidden in a block at the very bottom of the dashboard.
