@@ -30,6 +30,8 @@
                     <div class="auth-type">SSO</div>
                     {% elif v["auth-type"] == "ldap" %}
                     <div class="auth-type">LDAP</div>
+                    {% elif v["auth-type"] == "extern" %}
+                    <div class="auth-type">EXTERN</div>
                     {% endif %}
                 </div>
             </a>
