@@ -77,6 +77,6 @@ In testing you can spin up a nginx container setting those headers without authe
 
     # run in project root
     # add host needed to access the application if it's running natively on your machine
-    docker run -p 8080:8080 -v ./nginx-dev-helper/nginx.conf:/etc/nginx/nginx.conf:ro \
+    docker run -p 8080:8080 -v "$(pwd)/nginx-dev-helper/nginx.conf:/etc/nginx/nginx.conf:ro" \
             --add-host host.docker.internal:host-gateway nginx
 
