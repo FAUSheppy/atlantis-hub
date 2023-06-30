@@ -28,6 +28,8 @@
                     <b class="tile-name">{{ v["name"] }}</b>
                     {% if v["auth-type"] == "sso" %}
                     <div class="auth-type">SSO</div>
+                    {% elif v["auth-type"] == "ldap" %}
+                    <div class="auth-type">LDAP</div>
                     {% endif %}
                 </div>
             </a>
