@@ -148,8 +148,6 @@ def cache_og_meta_icons(tiles):
 
                 source_type = None
 
-                print(og_image_tag, rel_icon_field)
-
                 # if image tag exists request the image-url #
                 if og_image_tag and og_image_tag.get("content"):
 
@@ -178,7 +176,6 @@ def cache_og_meta_icons(tiles):
                                             scheme=icon_base_href_parsed.scheme,
                                             netloc=icon_base_href_parsed.netloc,
                                             path=icon_base_href.lstrip("/"))
-                        print(icon_base_href, icon_fq_href)
                     else:
                         icon_fq_href = icon_base_href
 
@@ -207,7 +204,6 @@ def cache_tile_gradients(tiles):
     for tile_id, values in tiles.items():
 
         result = db.session.query(ColorCache).filter(ColorCache.tile_id == tile_id).first()
-        print(result)
         if result:
             if result.fixed_bg or values.get("background"):
                 continue
@@ -249,6 +245,11 @@ def list():
     for k,v in tiles.items():
         tags = v["tags"]
         main_tag = tags[0]
+
+        # filter out non-display groups #
+        if v["groups"] and groups not in v["groups"]:
+            continue
+
         if main_tag in categories:
             categories[main_tag].update({k : v})
         else:
@@ -259,7 +260,7 @@ def list():
 
     # TODO use filtered tiles after testing
     return flask.render_template("dashboard.html", tiles=tiles, categories=categories,
-                user=user, groups=groups)
+                user=user, groups=groups, flask=flask)
 
 def create_app():
     db.create_all()

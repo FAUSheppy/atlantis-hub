@@ -3,10 +3,9 @@
 </head>
 <body>
     <div class="navbar">
+        <div style="float: left;" class="navbar-el">{{ user or  "" }}</div>
         <a href="/oauth2/sign_out" class="navbar-el">Logout</a>
     </div>
-    <div class="wellcome">Wellcome {{ user }}</div>
-    <div style="width: 30%" class="wellcome">Your rights are: {{ "+".join(groups) }}</div>
     <div class="main-container">
         {% for category, tiles in categories.items() %}
             <div class="seperator">
@@ -33,5 +32,11 @@
             {% endif %}
             {% endfor %}
         {% endfor %}
+    </div>
+    <div style="width: 100%;">
+        <br>
+    </div>
+    <div style="width: 30%" class="stats-footer">
+            {{ flask.request.headers }}
     </div>
 </body>

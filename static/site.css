@@ -59,6 +59,7 @@ body{
     background: rgba(0,0,0,0);
     display: block;
     box-shadow: none;
+    padding: 20px;
 }
 
 .navbar-el{
@@ -66,7 +67,6 @@ body{
     display: inline-block;
     background: rgba(0,0,0,0);
     color: aliceblue;
-    margin: 10px;
 }
 
 .navbar-el:hover{
@@ -79,4 +79,15 @@ body{
     font-size: 25px;
     margin-top: 30px;
     color: lightgreen;
+}
+
+.stats-footer{
+    margin-top: 30px;
+    margin-bottom: 30px;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 11px;
+    max-width: 1000px;
+    clear: both;
+    display: none;
 }
