@@ -80,3 +80,7 @@ In testing you can spin up a nginx container setting those headers without authe
     docker run -p 5001:5001 -v "$(pwd)/nginx-dev-helper/nginx.conf:/etc/nginx/nginx.conf:ro" \
             --add-host host.docker.internal:host-gateway nginx
 
+    # remember to listen on all interfaces when starting the server
+    # you might have to restart after the docker network is create if there was none before
+    ./server.py -i 0.0.0.0
+
