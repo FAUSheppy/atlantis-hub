@@ -85,7 +85,7 @@ def parse_xauth_groups(groups_string):
     
     # format ist like this group1,group2,role:role1,role:role2,...
     # lets ignore the roles for now
-    return filter(lambda x: "role:" not in x, groups_string.split(XAUTH_GROUPS_SEP))
+    return list(filter(lambda x: "role:" not in x, groups_string.split(XAUTH_GROUPS_SEP)))
 
 def parse_tiles_file():
 
@@ -230,7 +230,7 @@ def user_update():
     pass
 
 @app.route("/")
-def list():
+def dashboard():
 
     user = flask.request.headers.get("X-Forwarded-Preferred-Username")
     groups = parse_xauth_groups(flask.request.headers.get("X-Forwarded-Groups"))
@@ -247,7 +247,8 @@ def list():
         main_tag = tags[0]
 
         # filter out non-display groups #
-        if v["groups"] and groups not in v["groups"]:
+        if v["groups"] and not any([ g in v["groups"] for g in groups]):
+            print(groups, v["groups"])
             continue
 
         if main_tag in categories:
@@ -255,10 +256,6 @@ def list():
         else:
             categories.update({ main_tag : {k : v}})
 
-
-    #tiles_filtered = filter_tiles_by_groups(tiles, groups)
-
-    # TODO use filtered tiles after testing
     return flask.render_template("dashboard.html", tiles=tiles, categories=categories,
                 user=user, groups=groups, flask=flask)
 

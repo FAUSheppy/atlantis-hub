@@ -13,7 +13,6 @@
             <hr>
             </div>
             {% for k,v in tiles.items() %}
-            {% if not v.get("groups") or group in v["groups"] %}
             <a href="{{ v['href'] }}">
                 <div class="tile"
                     {% if v.get('background') %}
@@ -29,12 +28,8 @@
                     <b class="tile-name">{{ v["name"] }}</b>
                 </div>
             </a>
-            {% endif %}
             {% endfor %}
         {% endfor %}
-    </div>
-    <div style="width: 100%;">
-        <br>
     </div>
     <div style="width: 30%" class="stats-footer">
             {{ flask.request.headers }}
