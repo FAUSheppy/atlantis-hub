@@ -73,3 +73,10 @@ You can run this project behind any OAuth2 reverse proxy, that supports `X-Forwa
     X-Forwarded-Preferred-Username
     X-Forwarded-Groups
 
+In testing you can spin up a nginx container setting those headers without authentication:
+
+    # run in project root
+    # add host needed to access the application if it's running natively on your machine
+    docker run -p 8080:8080 -v ./nginx-dev-helper/nginx.conf:/etc/nginx/nginx.conf:ro \
+            --add-host host.docker.internal:host-gateway nginx
+
