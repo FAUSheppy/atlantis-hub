@@ -26,6 +26,9 @@
                              style="max-width: 465px" class="tile-image">
                     </img>
                     <b class="tile-name">{{ v["name"] }}</b>
+                    {% if v["auth-type"] == "sso" %}
+                    <div class="auth-type">SSO</div>
+                    {% endif %}
                 </div>
             </a>
             {% endfor %}
