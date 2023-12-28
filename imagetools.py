@@ -26,7 +26,10 @@ def get_gradient_colors(image_path):
 
     # check all colors the same #
     if len(set([color_left, color_top, color_right, color_bottom])) == 1:
-        return build_brightness_gradient(color_left, brighten_color(*color_left))
+        try:
+            return build_brightness_gradient(color_left, brighten_color(*color_left))
+        except TypeError as e:
+            print("WARN:", e, file=sys.stderr)
     
     # find a dominant color otherwies #
     color_thief = colorthief.ColorThief(image_path)
