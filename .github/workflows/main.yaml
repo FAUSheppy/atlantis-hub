@@ -23,10 +23,10 @@ jobs:
           username: ${{ secrets.REGISTRY_USER }}
           password: ${{ secrets.REGISTRY_PASS }}
       -
-        name: tmnf-docker
+        name: atlantis-hub
         uses: docker/build-push-action@v3
         with:
           context: .
           platforms: linux/amd64
           push: true
-          tags: "${{ secrets.REGISTRY }}/atlantis-hub:latest"
+          tags: "${{ secrets.REGISTRY }}//atlantishq/atlantis-hub:latest"
