@@ -1,20 +1,14 @@
-FROM python:3.9-slim-buster
+FROM alpine
 
-RUN apt update
-RUN apt upgrade -y
-RUN apt install python3-pip -y
-RUN python3 -m pip install --upgrade pip
-RUN apt install curl -y
-RUN apt autoremove -y
-RUN apt clean
+RUN apk add --no-cache py3-pip
 
 WORKDIR /app
 COPY ./ .
 
-RUN python3 -m pip install waitress
+RUN python3 -m pip install --no-cache-dir --break-system-packages waitress
 
 COPY req.txt .
-RUN python3 -m pip install --no-cache-dir -r req.txt
+RUN python3 -m pip install --no-cache-dir --break-system-packages -r req.txt
 
 RUN ln -s /app/uploads/ /app/static/uploads
 
