@@ -153,8 +153,11 @@ def cache_og_meta_icons(tiles):
 
                     try:
 
-                        og_imge_href = og_image_tag.get("content") 
-                        urllib_image_request = urllib.request.Request(og_image_tag.get("content"))
+                        og_image_href = og_image_tag.get("content")
+                        if(not (og_image_href.startswith("https://")
+                                or og_image_href.startswith("http://"))):
+                            og_image_href = "https://{}".format(og_image_href)
+                        urllib_image_request = urllib.request.Request(og_image_href)
                         urllib_image_request.add_header(USER_AGENT_HEADER, USER_AGENT_CONTENT)
                         image = urllib.request.urlopen(urllib_image_request).read()
 
