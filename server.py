@@ -11,6 +11,7 @@ import json
 import datetime
 import yaml
 import urllib
+import urllib.parse
 from bs4 import BeautifulSoup
 
 import sqlalchemy
@@ -154,12 +155,20 @@ def cache_og_meta_icons(tiles):
                     try:
 
                         og_image_href = og_image_tag.get("content")
-                        if(not (og_image_href.startswith("https://")
-                                or og_image_href.startswith("http://"))):
-                            og_image_href = "https://{}".format(og_image_href)
-                        urllib_image_request = urllib.request.Request(og_image_href)
-                        urllib_image_request.add_header(USER_AGENT_HEADER, USER_AGENT_CONTENT)
-                        image = urllib.request.urlopen(urllib_image_request).read()
+
+                        parsed_tag_url = urllib.parse.urlparse(og_image_href)
+                        original_request_url = urllib.parse.urlparse(href)
+
+                        if not parsed_tag_url.netloc or not parsed_tag_url.scheme:
+                            og_image_href = "{}://{}{}".format(original_request_url.scheme,
+                                original_request_url.netloc, parsed_tag_url.path)
+
+                        try:
+                            urllib_image_request = urllib.request.Request(og_image_href)
+                            urllib_image_request.add_header(USER_AGENT_HEADER, USER_AGENT_CONTENT)
+                            image = urllib.request.urlopen(urllib_image_request).read()
+                        except urllib.error.URLError as e:
+                            print("Failed to query og-image-tag [{}]:".format(og_image_href), e)
 
                         with open(cache_path, "wb") as f:
                             f.write(image)
