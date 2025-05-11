@@ -209,6 +209,7 @@ def cache_og_meta_icons(tiles):
 
             except urllib.error.HTTPError as e:
                 record_cache_result(href, None, None)
+                print(f"Failed to retrieve Icon for {e}", file=sys.stderr)
                 continue
 
 def cache_tile_gradients(tiles):
@@ -222,13 +223,16 @@ def cache_tile_gradients(tiles):
             else:
                 left_color = result.left_color
                 right_color = result.right_color
-        else:
+        elif "icon" in values:
             icon_path = values["icon"]
             left_color, right_color = imagetools.get_gradient_colors(icon_path)
             color_cache = ColorCache(tile_id=tile_id, right_color=right_color,
                                         left_color=left_color)
             db.session.merge(color_cache)
             db.session.commit()
+        else:
+            print(f"WARNING: No Icon found for {values}", file=sys.stderr)
+            pass
 
         values.update({ "gradient-left" : left_color })
         values.update({ "gradient-right" : right_color })
