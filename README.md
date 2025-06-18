@@ -11,7 +11,7 @@
                             -v ./static-icons/:/app/static/icons/ \
                             registry.atlantishq.de/atlantis-hub
 
-    # persis database and cache dir #
+    # persist database and cache dir #
     docker run -p 5000:5000 -v ./config.yaml:/app/config.yaml \
                             -v ./static-icons/:/app/static/icons/ \
                             -v ./sqlite-instance/:/app/instance/ \
