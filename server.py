@@ -26,6 +26,9 @@ TILES_CONFIG_FILE_PATH = "config.yaml"
 USER_AGENT_HEADER  = 'User-Agent'
 USER_AGENT_CONTENT = 'AtlantisHub:og-tag-query'
 
+AUTH_USER_HEADER = os.environ.get("AUTH_USER_HEADER") or "X-Forwarded-Preferred-Username"
+AUTH_GROUP_HEADER = os.environ.get("AUTH_GROUP_HEADER") or "X-Forwarded-Groups"
+
 app = flask.Flask("Atlantis Hub")
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -245,11 +248,16 @@ def user_update():
     # hidelist
     pass
 
+@app.route("/headers")
+def lolheaders():
+
+    return (str(flask.request.headers), 200)
+
 @app.route("/")
 def dashboard():
 
-    user = flask.request.headers.get("X-Forwarded-Preferred-Username")
-    groups = parse_xauth_groups(flask.request.headers.get("X-Forwarded-Groups"))
+    user = flask.request.headers.get(AUTH_USER_HEADER)
+    groups = parse_xauth_groups(flask.request.headers.get(AUTH_GROUP_HEADER))
 
     # load tiles #
     tiles = parse_tiles_file()
