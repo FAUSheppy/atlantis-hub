@@ -215,7 +215,7 @@ def cache_og_meta_icons(tiles):
                 record_cache_result(href, None, None)
                 print(f"Failed to retrieve Icon for {e} {href}", file=sys.stderr)
                 continue
-            except ssl.SSLCertVerificationError as e:
+            except (ssl.SSLCertVerificationError, urllib.error.URLError) as e:
                 record_cache_result(href, None, None)
                 print(f"Failed to retrieve Icon for {e} {href}", file=sys.stderr)
                 continue
