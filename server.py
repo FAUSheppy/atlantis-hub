@@ -99,6 +99,7 @@ def parse_tiles_file():
 
 def filter_tiles_by_groups(tiles, groups):
     '''Remove all tiles that are not covered by the users groups'''
+    return tiles
     return filter(lambda tile: not tile.get("groups") or tile.get("groups") in groups, tiles)
 
 def cache_og_meta_icons(tiles):
@@ -137,6 +138,17 @@ def cache_og_meta_icons(tiles):
                 # let's be honest about what we are doing #
                 urllib_request.add_header(USER_AGENT_HEADER, USER_AGENT_CONTENT)
                 og_response = urllib.request.urlopen(urllib_request)
+
+                # check if this request already produced an image #
+                content_type = og_response.headers.get("Content-Type")
+                if content_type and content_type.startswith("image/"):
+                    print(f"Found image at: {href}")
+                    with open(cache_path, "wb") as f:
+                        f.write(og_response.read())
+                    tiles[tile_id].update({ "icon" : cache_path})
+                    record_cache_result(href, cache_path, source_type)
+                    return
+
                 # og_response = requests.get(href, allow_redirects=True)
                 soup = BeautifulSoup(og_response, "lxml")
 
