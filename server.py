@@ -2,6 +2,7 @@
 
 import re
 import os
+import cairosvg
 import requests
 import flask
 import werkzeug
@@ -143,9 +144,29 @@ def cache_og_meta_icons(tiles):
                 content_type = og_response.headers.get("Content-Type")
                 if content_type and content_type.startswith("image/"):
                     print(f"Found image at: {href}")
+                
+                    image_bytes = og_response.read()
+                
+                    # Handle SVG separately
+                    if content_type == "image/svg+xml" or href.lower().endswith(".svg"):
+                        png_path = os.path.splitext(cache_path)[0] + ".png"
+                
+                        cairosvg.svg2png(
+                            bytestring=image_bytes,
+                            write_to=png_path,
+                            output_width=512,
+                            output_height=512
+                        )
+                
+                        tiles[tile_id].update({"icon": png_path})
+                        record_cache_result(href, png_path, "svg-converted")
+                        return
+                
+                    # All other image types (png, jpg, webp, etc.)
                     with open(cache_path, "wb") as f:
-                        f.write(og_response.read())
-                    tiles[tile_id].update({ "icon" : cache_path})
+                        f.write(image_bytes)
+                
+                    tiles[tile_id].update({"icon": cache_path})
                     record_cache_result(href, cache_path, "direct-link")
                     return
 

@@ -1,6 +1,12 @@
 FROM alpine
 
 RUN apk add --no-cache py3-pip
+RUN apk add --no-cache \
+    cairo \
+    cairo-dev \
+    pango \
+    gdk-pixbuf \
+    libffi-dev
 
 WORKDIR /app
 COPY ./ .

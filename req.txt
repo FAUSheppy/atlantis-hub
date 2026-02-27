@@ -6,3 +6,4 @@ requests
 PyYAML
 pillow
 flask-sqlalchemy
+cairosvg
