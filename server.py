@@ -12,6 +12,7 @@ import datetime
 import yaml
 import urllib
 import urllib.parse
+import ssl
 from bs4 import BeautifulSoup
 
 import sqlalchemy
@@ -212,7 +213,11 @@ def cache_og_meta_icons(tiles):
 
             except urllib.error.HTTPError as e:
                 record_cache_result(href, None, None)
-                print(f"Failed to retrieve Icon for {e}", file=sys.stderr)
+                print(f"Failed to retrieve Icon for {e} {href}", file=sys.stderr)
+                continue
+            except ssl.SSLCertVerificationError as e:
+                record_cache_result(href, None, None)
+                print(f"Failed to retrieve Icon for {e} {href}", file=sys.stderr)
                 continue
 
 def cache_tile_gradients(tiles):
