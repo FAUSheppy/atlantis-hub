@@ -146,7 +146,7 @@ def cache_og_meta_icons(tiles):
                     with open(cache_path, "wb") as f:
                         f.write(og_response.read())
                     tiles[tile_id].update({ "icon" : cache_path})
-                    record_cache_result(href, cache_path, source_type)
+                    record_cache_result(href, cache_path, "direct-link")
                     return
 
                 # og_response = requests.get(href, allow_redirects=True)

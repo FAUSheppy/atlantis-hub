@@ -15,4 +15,4 @@ RUN ln -s /app/uploads/ /app/static/uploads
 EXPOSE 5000/tcp
 
 ENTRYPOINT ["waitress-serve"] 
-CMD ["--host", "0.0.0.0", "--port", "5000", "--call", "app:createApp"]
+CMD ["--host", "0.0.0.0", "--port", "5000", "--threads", "8", "--call", "app:createApp"]

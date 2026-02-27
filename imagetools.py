@@ -27,6 +27,7 @@ def get_gradient_colors(image_path):
     # check all colors the same #
     if len(set([color_left, color_top, color_right, color_bottom])) == 1:
         try:
+            print(color_left, color_right)
             return build_brightness_gradient(color_left, brighten_color(*color_left))
         except TypeError as e:
             print("WARN:", e, file=sys.stderr)
@@ -38,6 +39,7 @@ def get_gradient_colors(image_path):
 
     if len(palette) < 2:
         return build_brightness_gradient(dominant_color, palette[1])
+
     return build_brightness_gradient(palette[0], palette[1])
 
 def build_brightness_gradient(color_left, color_right):
@@ -47,7 +49,7 @@ def brighten_color(r, g, b, a=255):
     '''Generate the second part of the gradient'''
 
     h, l, s   = colorsys.rgb_to_hls(r,g,b)
-    new_color = colorsys.hls_to_rgb(h, max(1, l)*1.5, s=s)
+    new_color = colorsys.hls_to_rgb(min(255, h), min(max(1, l)*1.5, 255), s=min(255, s))
 
     # handle transparent pictures
     if a == 0:
