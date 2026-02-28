@@ -33,7 +33,12 @@ def get_gradient_colors(image_path):
             print("WARN:", e, file=sys.stderr)
     
     # find a dominant color otherwies #
-    color_thief = colorthief.ColorThief(image_path)
+    try:
+        color_thief = colorthief.ColorThief(image_path)
+    except Exception:
+        print(f"WARNING: {image_path} color extraction failed:", e)
+        return ("rgba(0,0,0,0)", "rgba(1.5,1.5,1.5,0.5)")
+
     dominant_color = color_thief.get_color(quality=1)
     palette = color_thief.get_palette(color_count=2)
 
