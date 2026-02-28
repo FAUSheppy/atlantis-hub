@@ -25,7 +25,14 @@
                     <img height=65 src="{{ v['icon'] }}"
                              style="max-width: 465px" class="tile-image">
                     </img>
-                    <b class="tile-name">{{ v["name"] }}</b>
+                    <div class="text-container">
+                        <b class="tile-name">{{ v["name"] }}</b>
+                        {% if v.get("description") %}
+                        <small class="tile-description">{{ v["name"] }}</small>
+                        {% else %}
+                        <small></small>
+                        {% endif %}
+                    </div>
                     {% if v["auth-type"] == "sso" %}
                     <div class="auth-type">SSO</div>
                     {% elif v["auth-type"] == "ldap" %}
