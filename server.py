@@ -310,7 +310,6 @@ def dashboard():
 
         # filter out non-display groups #
         if v["groups"] and not any([ g in v["groups"] for g in groups]):
-            print(groups, v["groups"])
             continue
 
         if main_tag in categories:
