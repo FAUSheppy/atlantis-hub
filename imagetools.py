@@ -35,12 +35,11 @@ def get_gradient_colors(image_path):
     # find a dominant color otherwies #
     try:
         color_thief = colorthief.ColorThief(image_path)
+        dominant_color = color_thief.get_color(quality=1)
+        palette = color_thief.get_palette(color_count=2)
     except Exception:
         print(f"WARNING: {image_path} color extraction failed:", e)
         return ("rgba(0,0,0,0)", "rgba(1.5,1.5,1.5,0.5)")
-
-    dominant_color = color_thief.get_color(quality=1)
-    palette = color_thief.get_palette(color_count=2)
 
     if len(palette) < 2:
         return build_brightness_gradient(dominant_color, palette[1])
