@@ -160,7 +160,7 @@ def cache_og_meta_icons(tiles):
                 
                         tiles[tile_id].update({"icon": png_path})
                         record_cache_result(href, png_path, "svg-converted")
-                        return
+                        continue
                 
                     # All other image types (png, jpg, webp, etc.)
                     with open(cache_path, "wb") as f:
@@ -168,7 +168,7 @@ def cache_og_meta_icons(tiles):
                 
                     tiles[tile_id].update({"icon": cache_path})
                     record_cache_result(href, cache_path, "direct-link")
-                    return
+                    continue
 
                 # og_response = requests.get(href, allow_redirects=True)
                 soup = BeautifulSoup(og_response, "lxml")
