@@ -5,6 +5,5 @@ instance/
 *.yaml
 static/cache/
 *.db
-static/icons/
 atlantis-hub-content/
 *.bak
