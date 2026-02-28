@@ -47,6 +47,12 @@ body{
     opacity: 0.8;
 }
 
+.tile-description{
+    font-size: 70%;
+    text-shadow: 1px 1px 5px #134409;
+    margin-left: 30px;
+}
+
 .tile-name{
     margin-left: 30px;
     font-family: monospace;
