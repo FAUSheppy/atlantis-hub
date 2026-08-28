@@ -9,12 +9,12 @@ RUN apk add --no-cache \
     libffi-dev
 
 WORKDIR /app
-COPY ./ .
-
 RUN python3 -m pip install --no-cache-dir --break-system-packages waitress
 
 COPY req.txt .
 RUN python3 -m pip install --no-cache-dir --break-system-packages -r req.txt
+
+COPY ./*.py .
 
 RUN ln -s /app/uploads/ /app/static/uploads
 
