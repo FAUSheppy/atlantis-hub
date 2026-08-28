@@ -18,6 +18,7 @@ from bs4 import BeautifulSoup
 
 import sqlalchemy
 from sqlalchemy import Column, Integer, String, Boolean, or_, and_, asc, desc
+from sqlalchemy.dialects.sqlite import insert
 from flask_sqlalchemy import SQLAlchemy
 
 import imagetools
@@ -269,7 +270,19 @@ def cache_tile_gradients(tiles):
             left_color, right_color = imagetools.get_gradient_colors(icon_path)
             color_cache = ColorCache(tile_id=tile_id, right_color=right_color,
                                         left_color=left_color)
-            db.session.merge(color_cache)
+            stmt = insert(ColorCache).values(
+                tile_id=tile_id,
+                left_color=left_color,
+                right_color=right_color,
+            ).on_conflict_do_update(
+                index_elements=["tile_id"],
+                set_={
+                    "left_color": left_color,
+                    "right_color": right_color,
+                },
+            )
+            
+            db.session.execute(stmt)
             db.session.commit()
         else:
             print(f"WARNING: No Icon found for {values}", file=sys.stderr)
