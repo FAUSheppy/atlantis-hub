@@ -16,6 +16,7 @@ RUN python3 -m pip install --no-cache-dir --break-system-packages -r req.txt
 
 COPY ./*.py .
 
+RUN mkdir -p /app/uploads/ /app/static/
 RUN ln -s /app/uploads/ /app/static/uploads
 
 EXPOSE 5000/tcp
