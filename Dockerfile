@@ -15,6 +15,8 @@ COPY req.txt .
 RUN python3 -m pip install --no-cache-dir --break-system-packages -r req.txt
 
 COPY ./*.py .
+COPY templates ./templates
+COPY static ./static
 
 RUN mkdir -p /app/uploads/ /app/static/
 RUN ln -s /app/uploads/ /app/static/uploads
